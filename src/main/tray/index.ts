@@ -1,11 +1,4 @@
-import {
-  Menu,
-  MenuItem,
-  MenuItemConstructorOptions,
-  Tray,
-  app,
-  nativeImage,
-} from "electron";
+import { Menu, MenuItem, MenuItemConstructorOptions, Tray, app, nativeImage } from "electron";
 import { showMainWindow } from "../window";
 import { currentMusicInfoStore } from "../store/current-music";
 import { PlayerState, RepeatMode } from "@/renderer/core/track-player/enum";
@@ -69,10 +62,14 @@ if (process.platform === "darwin") {
 
 export function setupTray() {
   tray = new Tray(
-    nativeImage.createFromPath(getResPath("logo.png")).resize({
-      width: 32,
-      height: 32,
-    })
+    nativeImage.createFromPath(getResPath("logo.png")).resize(
+      process.platform === "darwin"
+        ? { width: 16, height: 16 }
+        : {
+            width: 32,
+            height: 32,
+          }
+    )
   );
 
   if (process.platform === "linux") {
@@ -101,14 +98,11 @@ export async function setupTrayMenu() {
   const ctxMenu: Array<MenuItemConstructorOptions | MenuItem> = [];
 
   /********* 音乐信息 **********/
-  const { currentMusic, currentPlayerState, currentRepeatMode } =
-    currentMusicInfoStore.getValue();
+  const { currentMusic, currentPlayerState, currentRepeatMode } = currentMusicInfoStore.getValue();
   // 更新一下tooltip
   if (currentMusic) {
     tray.setToolTip(
-      `${currentMusic.title ?? t("media.unknown_title")}${
-        currentMusic.artist ? ` - ${currentMusic.artist}` : ""
-      }`
+      `${currentMusic.title ?? t("media.unknown_title")}${currentMusic.artist ? ` - ${currentMusic.artist}` : ""}`
     );
   } else {
     tray.setToolTip("MusicFree");
@@ -148,9 +142,7 @@ export async function setupTrayMenu() {
         }
         sendCommand(
           "SetPlayerState",
-          currentPlayerState === PlayerState.Playing
-            ? PlayerState.Paused
-            : PlayerState.Playing
+          currentPlayerState === PlayerState.Playing ? PlayerState.Paused : PlayerState.Playing
         );
       },
     },
